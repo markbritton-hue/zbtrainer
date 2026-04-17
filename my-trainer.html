@@ -218,13 +218,17 @@
 
   auth.onAuthStateChanged(async user => {
     if (!user) { window.location.href = 'index.html'; return; }
-    const snap = await db.collection('users').doc(user.uid).get();
-    if (!snap.exists || snap.data().role !== 'athlete') {
-      window.location.href = 'trainer-dashboard.html'; return;
+    try {
+      const snap = await db.collection('users').doc(user.uid).get();
+      if (!snap.exists) { window.location.href = 'index.html'; return; }
+      if (snap.data().role !== 'athlete') { window.location.href = 'trainer-dashboard.html'; return; }
+      currentUser = user;
+      athleteData = snap.data();
+      render();
+    } catch(e) {
+      console.error('Auth load error:', e);
+      // Show page anyway — don't redirect on permission errors
     }
-    currentUser = user;
-    athleteData = snap.data();
-    render();
     document.getElementById('loadingOverlay').style.display = 'none';
   });
 
