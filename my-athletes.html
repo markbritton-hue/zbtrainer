@@ -334,7 +334,6 @@
   // ── Load athletes ──
   function loadAthletes() {
     db.collection('users')
-      .where('trainerId', '==', currentUser.uid)
       .where('role', '==', 'athlete')
       .onSnapshot(snap => {
         allAthletes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -408,9 +407,6 @@
             <button class="btn-assign" onclick="openAssignModal('${a.id}', '${esc(a.displayName || a.email)}')">
               <i class="fa-solid fa-clipboard-list"></i> Assign Program
             </button>
-            <button class="btn-remove" onclick="removeAthlete('${a.id}', '${esc(a.displayName || a.email)}')">
-              <i class="fa-solid fa-user-minus"></i> Remove
-            </button>
           </div>
         </div>`);
     });
@@ -457,18 +453,6 @@
   }
 
   // ── Remove athlete ──
-  async function removeAthlete(uid, name) {
-    if (!confirm(`Remove ${name} from your roster? They will need to reconnect using your code.`)) return;
-    try {
-      await db.collection('users').doc(uid).update({
-        trainerId: firebase.firestore.FieldValue.delete(),
-        assignedProgram: firebase.firestore.FieldValue.delete()
-      });
-      showToast(`${name} removed.`, 'success');
-    } catch(e) {
-      showToast('Error removing athlete.', 'error');
-    }
-  }
 
 
   // ── Helpers ──
