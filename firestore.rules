@@ -21,7 +21,11 @@ service cloud.firestore {
       );
       allow create: if request.auth != null && request.auth.uid == uid
         && request.resource.data.role in ['athlete', 'trainer'];
-      allow update: if request.auth != null && request.auth.uid == uid;
+      // Athletes can update their own doc (to set trainerId); trainers can update assignedProgram on athlete docs
+      allow update: if request.auth != null && (
+        request.auth.uid == uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'trainer'
+      );
       allow delete: if false;
     }
 

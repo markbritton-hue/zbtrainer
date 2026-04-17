@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>My Athletes — ZBTrainer</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* ── Nav ── */
+    .top-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(167,139,250,0.15);
+      background: rgba(15,23,42,0.6);
+    }
+    .nav-brand {
+      font-size: 1.35rem; font-weight: 800;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      display: flex; align-items: center; gap: 10px; text-decoration: none;
+    }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .btn-back {
+      background: none; border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.6); font-size: 0.85rem; font-weight: 600;
+      padding: 6px 16px; border-radius: 25px; cursor: pointer;
+      text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-back:hover { border-color: #a78bfa; color: #a78bfa; background: rgba(167,139,250,0.08); }
+    .btn-logout {
+      background: none; border: 1px solid rgba(239,68,68,0.4);
+      color: rgba(239,68,68,0.8); font-size: 0.85rem; font-weight: 600;
+      padding: 6px 16px; border-radius: 25px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-logout:hover { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.08); }
+
+    /* ── Page header ── */
+    .page-header {
+      padding: 40px 0 28px;
+      display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .page-header h1 {
+      font-size: 1.8rem; font-weight: 800;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;
+    }
+    .page-header p { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: 4px 0 0; }
+
+    /* ── Invite code card ── */
+    .invite-card {
+      background: rgba(30,41,59,0.8);
+      border: 1px solid rgba(167,139,250,0.25);
+      border-radius: 15px; padding: 24px 28px;
+      margin-bottom: 32px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .invite-card-left { display: flex; align-items: center; gap: 16px; }
+    .invite-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; color: #a78bfa; flex-shrink: 0;
+    }
+    .invite-label { color: rgba(255,255,255,0.5); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .invite-code {
+      font-size: 1.6rem; font-weight: 800; letter-spacing: 4px;
+      color: #a78bfa; font-family: 'Courier New', monospace;
+    }
+    .invite-hint { color: rgba(255,255,255,0.4); font-size: 0.82rem; margin-top: 4px; }
+    .btn-copy {
+      background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.35);
+      color: #a78bfa; font-weight: 600; padding: 10px 20px; border-radius: 25px;
+      cursor: pointer; transition: all 0.2s; font-size: 0.9rem;
+      display: inline-flex; align-items: center; gap: 7px;
+    }
+    .btn-copy:hover { background: rgba(167,139,250,0.25); }
+
+    /* ── Search ── */
+    .search-bar {
+      background: rgba(15,23,42,0.7); border: 2px solid rgba(167,139,250,0.2);
+      color: white; border-radius: 25px; padding: 11px 20px;
+      width: 100%; max-width: 380px; font-size: 0.95rem; outline: none;
+    }
+    .search-bar:focus { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(167,139,250,0.12); }
+    .search-bar::placeholder { color: rgba(255,255,255,0.3); }
+
+    /* ── Athlete cards ── */
+    .athletes-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px; margin-bottom: 48px;
+    }
+    .athlete-card {
+      background: rgba(30,41,59,0.85); border: 1px solid rgba(96,165,250,0.2);
+      border-radius: 15px; padding: 24px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4); transition: all 0.3s ease;
+    }
+    .athlete-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.5); border-color: rgba(96,165,250,0.4); }
+    .athlete-card-top { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+    .athlete-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; font-weight: 800; color: white; flex-shrink: 0; text-transform: uppercase;
+    }
+    .athlete-name { font-size: 1rem; font-weight: 700; color: rgba(255,255,255,0.9); margin-bottom: 2px; }
+    .athlete-email { font-size: 0.8rem; color: rgba(255,255,255,0.4); }
+    .athlete-stats {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;
+    }
+    .stat-box {
+      background: rgba(15,23,42,0.5); border: 1px solid rgba(96,165,250,0.15);
+      border-radius: 8px; padding: 10px 12px; text-align: center;
+    }
+    .stat-value { font-size: 1.1rem; font-weight: 700; color: #60a5fa; }
+    .stat-label { font-size: 0.72rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+    .athlete-program {
+      background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2);
+      border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
+      font-size: 0.85rem;
+    }
+    .athlete-program-label { color: rgba(255,255,255,0.4); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; }
+    .athlete-program-name { color: #a78bfa; font-weight: 600; }
+    .athlete-card-footer { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── Buttons ── */
+    .btn-primary-app {
+      background: #a78bfa; border: none; color: white; font-weight: 700;
+      padding: 11px 24px; border-radius: 25px; font-size: 0.95rem;
+      cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(167,139,250,0.3);
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary-app:hover { background: #8b5cf6; transform: translateY(-2px); }
+    .btn-assign {
+      background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.3);
+      color: #60a5fa; font-size: 0.82rem; font-weight: 600;
+      padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .btn-assign:hover { background: rgba(96,165,250,0.22); }
+    .btn-remove {
+      background: none; border: 1px solid rgba(239,68,68,0.3);
+      color: rgba(239,68,68,0.7); font-size: 0.82rem; font-weight: 600;
+      padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-remove:hover { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.08); }
+
+    /* ── Empty / loading ── */
+    .empty-state {
+      grid-column: 1/-1; text-align: center; padding: 60px 20px;
+    }
+    .empty-state i { font-size: 3rem; color: rgba(96,165,250,0.25); margin-bottom: 16px; display: block; }
+    .empty-state p { color: rgba(255,255,255,0.35); font-size: 0.95rem; }
+    .loading-overlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; font-size: 1.1rem; color: rgba(255,255,255,0.5); gap: 12px;
+    }
+
+    /* ── Assign modal ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.8); z-index: 9999;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid rgba(167,139,250,0.3); border-radius: 20px;
+      padding: 36px; width: 100%; max-width: 480px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    }
+    .modal-title {
+      font-size: 1.3rem; font-weight: 800;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px;
+    }
+    .field-label { color: rgba(255,255,255,0.6); font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+    .field-select {
+      background: rgba(15,23,42,0.7); border: 2px solid rgba(167,139,250,0.25);
+      color: white; border-radius: 8px; padding: 11px 14px;
+      width: 100%; font-size: 0.95rem; margin-bottom: 20px; outline: none;
+    }
+    .field-select:focus { border-color: #a78bfa; }
+    .field-select option { background: #1e293b; }
+    .modal-footer { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-cancel {
+      background: none; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6);
+      font-weight: 600; padding: 10px 22px; border-radius: 25px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-cancel:hover { border-color: rgba(255,255,255,0.4); color: white; }
+    .btn-save {
+      background: #a78bfa; border: none; color: white; font-weight: 700;
+      padding: 10px 26px; border-radius: 25px; cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(167,139,250,0.3);
+    }
+    .btn-save:hover { background: #8b5cf6; transform: translateY(-2px); }
+    .btn-save:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #1e293b; border: 1px solid rgba(167,139,250,0.4);
+      border-radius: 14px; padding: 14px 22px; z-index: 99999;
+      display: none; align-items: center; gap: 10px;
+      font-size: 0.9rem; color: rgba(255,255,255,0.85);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+    .toast.show { display: flex; }
+    .toast.success { border-color: rgba(16,185,129,0.5); }
+    .toast.error   { border-color: rgba(239,68,68,0.5); color: #ef4444; }
+
+    @media (max-width: 768px) {
+      .top-nav { padding: 14px 16px; }
+      .invite-card { flex-direction: column; align-items: flex-start; }
+      .page-header { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 575px) {
+      .athlete-stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <i class="fa-solid fa-spinner fa-spin"></i> Loading…
+</div>
+
+<!-- Nav -->
+<nav class="top-nav">
+  <a href="trainer-dashboard.html" class="nav-brand">
+    <i class="fa-solid fa-dumbbell"></i> ZBTrainer
+  </a>
+  <div class="nav-right">
+    <a href="trainer-dashboard.html" class="btn-back">
+      <i class="fa-solid fa-arrow-left"></i> Dashboard
+    </a>
+    <button class="btn-logout" onclick="doSignOut()">
+      <i class="fa-solid fa-right-from-bracket me-1"></i>Sign Out
+    </button>
+  </div>
+</nav>
+
+<div class="container" style="max-width:1100px;">
+
+  <div class="page-header">
+    <div>
+      <h1><i class="fa-solid fa-users me-2" style="font-size:1.5rem;"></i>My Athletes</h1>
+      <p id="athleteCount">Loading athletes…</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+      <input type="text" class="search-bar" id="searchBar" placeholder="🔍  Search athletes…" oninput="renderAthletes()" />
+    </div>
+  </div>
+
+  <!-- Invite code -->
+  <div class="invite-card">
+    <div class="invite-card-left">
+      <div class="invite-icon"><i class="fa-solid fa-link"></i></div>
+      <div>
+        <div class="invite-label">Your Trainer Code</div>
+        <div class="invite-code" id="trainerCode">——————</div>
+        <div class="invite-hint">Share this code with athletes so they can connect to you.</div>
+      </div>
+    </div>
+    <button class="btn-copy" onclick="copyCode()">
+      <i class="fa-solid fa-copy"></i> Copy Code
+    </button>
+  </div>
+
+  <!-- Athletes grid -->
+  <div class="athletes-grid" id="athletesGrid">
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <i class="fa-solid fa-users"></i>
+      <p>No athletes connected yet.<br>Share your trainer code to get started.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Assign Program Modal -->
+<div class="modal-overlay" id="assignModal">
+  <div class="modal-box">
+    <h2 class="modal-title"><i class="fa-solid fa-clipboard-list me-2"></i>Assign Program</h2>
+    <p style="color:rgba(255,255,255,0.5); font-size:0.88rem; margin-bottom:20px;">
+      Assigning to: <strong id="assignAthleteNameLabel" style="color:rgba(255,255,255,0.8);"></strong>
+    </p>
+    <label class="field-label">Select Program</label>
+    <select class="field-select" id="programSelect"></select>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeAssignModal()">Cancel</button>
+      <button class="btn-save" id="btnAssign" onclick="doAssign()">
+        <i class="fa-solid fa-check me-1"></i> Assign
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDReR325Fg0E1ygr0kyNB4tl176MrFDJxk",
+    authDomain: "zbtrainer.firebaseapp.com",
+    projectId: "zbtrainer",
+    storageBucket: "zbtrainer.firebasestorage.app",
+    messagingSenderId: "674267791113",
+    appId: "1:674267791113:web:83da3e5b0db879f6881dd8"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+
+  let currentUser   = null;
+  let trainerCode   = '';
+  let allAthletes   = [];
+  let allPrograms   = [];
+  let assigningUid  = null;
+
+  // ── Auth guard ──
+  auth.onAuthStateChanged(async user => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    const snap = await db.collection('users').doc(user.uid).get();
+    if (!snap.exists || snap.data().role !== 'trainer') {
+      window.location.href = 'athlete-dashboard.html'; return;
+    }
+    currentUser = user;
+
+    // Generate or retrieve trainer code (first 6 chars of UID, uppercased)
+    trainerCode = snap.data().trainerCode || user.uid.slice(0,6).toUpperCase();
+    if (!snap.data().trainerCode) {
+      await db.collection('users').doc(user.uid).update({ trainerCode });
+    }
+    document.getElementById('trainerCode').textContent = trainerCode;
+
+    loadAthletes();
+    loadPrograms();
+  });
+
+  // ── Load athletes ──
+  function loadAthletes() {
+    db.collection('users')
+      .where('trainerId', '==', currentUser.uid)
+      .where('role', '==', 'athlete')
+      .onSnapshot(snap => {
+        allAthletes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderAthletes();
+        document.getElementById('loadingOverlay').style.display = 'none';
+      }, err => {
+        console.error(err);
+        document.getElementById('loadingOverlay').style.display = 'none';
+      });
+  }
+
+  // ── Load programs for assign dropdown ──
+  function loadPrograms() {
+    db.collection('programs')
+      .where('trainerId', '==', currentUser.uid)
+      .onSnapshot(snap => {
+        allPrograms = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      });
+  }
+
+  // ── Render athletes ──
+  function renderAthletes() {
+    const grid    = document.getElementById('athletesGrid');
+    const empty   = document.getElementById('emptyState');
+    const query   = document.getElementById('searchBar').value.toLowerCase();
+    const filtered = allAthletes.filter(a =>
+      !query ||
+      (a.displayName || '').toLowerCase().includes(query) ||
+      (a.email || '').toLowerCase().includes(query)
+    );
+
+    [...grid.querySelectorAll('.athlete-card')].forEach(c => c.remove());
+
+    const count = allAthletes.length;
+    document.getElementById('athleteCount').textContent =
+      count === 0 ? 'No athletes connected yet.' :
+      count === 1 ? '1 athlete connected' : count + ' athletes connected';
+
+    if (filtered.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    filtered.forEach(a => {
+      const initials  = getInitials(a.displayName || a.email || '?');
+      const progName  = a.assignedProgram ? esc(a.assignedProgram) : null;
+      const joinDate  = a.createdAt ? new Date(a.createdAt.seconds * 1000).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—';
+
+      grid.insertAdjacentHTML('beforeend', `
+        <div class="athlete-card" id="ac-${a.id}">
+          <div class="athlete-card-top">
+            <div class="athlete-avatar">${initials}</div>
+            <div>
+              <div class="athlete-name">${esc(a.displayName || 'Unnamed')}</div>
+              <div class="athlete-email">${esc(a.email || '')}</div>
+            </div>
+          </div>
+          <div class="athlete-stats">
+            <div class="stat-box">
+              <div class="stat-value">${esc(a.sessionsCompleted || '0')}</div>
+              <div class="stat-label">Sessions</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value">${joinDate}</div>
+              <div class="stat-label">Joined</div>
+            </div>
+          </div>
+          <div class="athlete-program">
+            <div class="athlete-program-label">Current Program</div>
+            <div class="athlete-program-name">${progName || '<span style="color:rgba(255,255,255,0.3);">None assigned</span>'}</div>
+          </div>
+          <div class="athlete-card-footer">
+            <button class="btn-assign" onclick="openAssignModal('${a.id}', '${esc(a.displayName || a.email)}')">
+              <i class="fa-solid fa-clipboard-list"></i> Assign Program
+            </button>
+            <button class="btn-remove" onclick="removeAthlete('${a.id}', '${esc(a.displayName || a.email)}')">
+              <i class="fa-solid fa-user-minus"></i> Remove
+            </button>
+          </div>
+        </div>`);
+    });
+  }
+
+  // ── Assign program modal ──
+  function openAssignModal(uid, name) {
+    assigningUid = uid;
+    document.getElementById('assignAthleteNameLabel').textContent = name;
+    const sel = document.getElementById('programSelect');
+    sel.innerHTML = '<option value="">— No Program —</option>' +
+      allPrograms.map(p => `<option value="${esc(p.name)}">${esc(p.name)} (${esc(p.difficulty)}, ${esc(p.duration)})</option>`).join('');
+
+    // Pre-select current program
+    const athlete = allAthletes.find(a => a.id === uid);
+    if (athlete?.assignedProgram) sel.value = athlete.assignedProgram;
+
+    document.getElementById('assignModal').classList.add('open');
+  }
+
+  function closeAssignModal() {
+    document.getElementById('assignModal').classList.remove('open');
+    assigningUid = null;
+  }
+
+  async function doAssign() {
+    if (!assigningUid) return;
+    const progName = document.getElementById('programSelect').value;
+    const btn = document.getElementById('btnAssign');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>';
+    try {
+      await db.collection('users').doc(assigningUid).update({
+        assignedProgram: progName || firebase.firestore.FieldValue.delete()
+      });
+      showToast(progName ? `Program assigned!` : 'Program removed.', 'success');
+      closeAssignModal();
+    } catch(e) {
+      showToast('Error: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check me-1"></i> Assign';
+    }
+  }
+
+  // ── Remove athlete ──
+  async function removeAthlete(uid, name) {
+    if (!confirm(`Remove ${name} from your roster? They will need to reconnect using your code.`)) return;
+    try {
+      await db.collection('users').doc(uid).update({
+        trainerId: firebase.firestore.FieldValue.delete(),
+        assignedProgram: firebase.firestore.FieldValue.delete()
+      });
+      showToast(`${name} removed.`, 'success');
+    } catch(e) {
+      showToast('Error removing athlete.', 'error');
+    }
+  }
+
+  // ── Copy code ──
+  function copyCode() {
+    navigator.clipboard.writeText(trainerCode).then(() => {
+      showToast('Trainer code copied!', 'success');
+    });
+  }
+
+  // ── Helpers ──
+  function getInitials(name) {
+    const parts = name.trim().split(' ');
+    return parts.length >= 2
+      ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase()
+      : name.slice(0,2).toUpperCase();
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.className = 'toast show ' + type;
+    t.innerHTML = (type === 'success'
+      ? '<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> '
+      : '<i class="fa-solid fa-circle-exclamation"></i> ') + msg;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  async function doSignOut() { await auth.signOut(); window.location.href = 'index.html'; }
+
+  document.getElementById('assignModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAssignModal();
+  });
+</script>
+</body>
+</html>
