@@ -76,15 +76,6 @@
       color: #a78bfa; font-family: 'Courier New', monospace;
     }
     .invite-hint { color: rgba(255,255,255,0.4); font-size: 0.82rem; margin-top: 4px; }
-    .add-athlete-row { display: flex; gap: 10px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
-    .add-email-input {
-      background: rgba(15,23,42,0.7); border: 2px solid rgba(167,139,250,0.25);
-      color: white; border-radius: 8px; padding: 10px 14px; font-size: 0.9rem;
-      outline: none; flex: 1; min-width: 200px;
-    }
-    .add-email-input:focus { border-color: #a78bfa; }
-    .add-email-input::placeholder { color: rgba(255,255,255,0.3); }
-    .add-error { color: #ef4444; font-size: 0.82rem; margin-top: 6px; display: none; }
     .btn-copy {
       background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.35);
       color: #a78bfa; font-weight: 600; padding: 10px 20px; border-radius: 25px;
@@ -269,23 +260,6 @@
     </div>
     <div class="d-flex gap-2 align-items-center flex-wrap">
       <input type="text" class="search-bar" id="searchBar" placeholder="🔍  Search athletes…" oninput="renderAthletes()" />
-    </div>
-  </div>
-
-  <!-- Add athlete by email -->
-  <div class="invite-card">
-    <div class="invite-card-left" style="flex:1;">
-      <div class="invite-icon"><i class="fa-solid fa-user-plus"></i></div>
-      <div style="flex:1;">
-        <div class="invite-label">Add Athlete</div>
-        <div class="add-athlete-row">
-          <input type="email" id="addEmail" class="add-email-input" placeholder="athlete@email.com" />
-          <button class="btn-copy" id="btnAdd" onclick="addAthleteByEmail()">
-            <i class="fa-solid fa-plus"></i> Add
-          </button>
-        </div>
-        <div class="add-error" id="addError"></div>
-      </div>
     </div>
   </div>
 
@@ -496,39 +470,6 @@
     }
   }
 
-  // ── Add athlete by email ──
-  async function addAthleteByEmail() {
-    const email  = document.getElementById('addEmail').value.trim().toLowerCase();
-    const errEl  = document.getElementById('addError');
-    const btn    = document.getElementById('btnAdd');
-    errEl.style.display = 'none';
-    if (!email) { errEl.textContent = 'Please enter an email address.'; errEl.style.display = 'block'; return; }
-
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-    try {
-      const snap = await db.collection('users').where('email', '==', email).where('role', '==', 'athlete').get();
-      if (snap.empty) {
-        errEl.textContent = 'No athlete account found with that email.';
-        errEl.style.display = 'block';
-      } else {
-        const athleteDoc = snap.docs[0];
-        if (athleteDoc.data().trainerId === currentUser.uid) {
-          errEl.textContent = 'This athlete is already on your roster.';
-          errEl.style.display = 'block';
-        } else {
-          await db.collection('users').doc(athleteDoc.id).update({ trainerId: currentUser.uid });
-          document.getElementById('addEmail').value = '';
-          showToast('Athlete added!', 'success');
-        }
-      }
-    } catch(e) {
-      errEl.textContent = 'Error: ' + e.message;
-      errEl.style.display = 'block';
-    }
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add';
-  }
 
   // ── Helpers ──
   function getInitials(name) {
