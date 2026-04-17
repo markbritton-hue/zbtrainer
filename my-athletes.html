@@ -336,12 +336,14 @@
     db.collection('users')
       .where('role', '==', 'athlete')
       .onSnapshot(snap => {
+        console.log('Athletes snapshot — docs:', snap.size);
         allAthletes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        console.log('Athletes loaded:', allAthletes);
         renderAthletes();
         document.getElementById('loadingOverlay').style.display = 'none';
       }, err => {
-        console.error(err);
-        document.getElementById('loadingOverlay').style.display = 'none';
+        console.error('Athletes query error:', err);
+        document.getElementById('loadingOverlay').innerHTML = '<span style="color:#ef4444;">Error: ' + err.message + '</span>';
       });
   }
 
