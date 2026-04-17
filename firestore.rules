@@ -4,6 +4,16 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // Users can read/write their own doc; trainers can read athlete docs
+    // Trainers can create/edit their own programs; athletes can read programs assigned to them
+    match /programs/{programId} {
+      allow read:   if request.auth != null;
+      allow create: if request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'trainer'
+        && request.resource.data.trainerId == request.auth.uid;
+      allow update, delete: if request.auth != null
+        && resource.data.trainerId == request.auth.uid;
+    }
+
     match /users/{uid} {
       allow read: if request.auth != null && (
         request.auth.uid == uid ||
