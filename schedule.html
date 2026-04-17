@@ -175,6 +175,41 @@
     .toast.success { border-color: rgba(16,185,129,0.5); }
     .toast.error   { border-color: rgba(239,68,68,0.5); color: #ef4444; }
 
+    /* ── Program banner ── */
+    .program-banner {
+      background: rgba(30,41,59,0.85); border: 1px solid rgba(167,139,250,0.25);
+      border-radius: 15px; padding: 22px 26px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .program-banner-left { display: flex; align-items: center; gap: 16px; }
+    .program-banner-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; color: #a78bfa; flex-shrink: 0;
+    }
+    .program-banner-label { color: rgba(255,255,255,0.45); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .program-banner-name  { font-size: 1rem; font-weight: 700; color: #a78bfa; margin-bottom: 4px; }
+    .program-banner-meta  { color: rgba(255,255,255,0.4); font-size: 0.82rem; display: flex; gap: 12px; flex-wrap: wrap; }
+    .program-started-badge {
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 4px 12px; border-radius: 20px;
+      background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); color: #10b981;
+    }
+    .btn-start-program {
+      background: #a78bfa; border: none; color: white; font-weight: 700;
+      padding: 10px 22px; border-radius: 25px; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(167,139,250,0.3);
+      display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+    }
+    .btn-start-program:hover { background: #8b5cf6; transform: translateY(-2px); }
+    .btn-change-date {
+      background: none; border: 1px solid rgba(167,139,250,0.3); color: rgba(167,139,250,0.7);
+      font-size: 0.82rem; font-weight: 600; padding: 6px 14px; border-radius: 20px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-change-date:hover { border-color: #a78bfa; color: #a78bfa; }
+
     .loading-overlay {
       position: fixed; inset: 0; background: linear-gradient(135deg, #0f172a, #1e293b);
       display: flex; align-items: center; justify-content: center;
@@ -217,6 +252,11 @@
     <button class="btn-primary-app" onclick="openModal()">
       <i class="fa-solid fa-plus"></i> Request Session
     </button>
+  </div>
+
+  <!-- Program card -->
+  <div id="programSection" style="display:none; margin-bottom:28px;">
+    <div class="program-banner" id="programBanner"></div>
   </div>
 
   <!-- Tabs -->
@@ -269,6 +309,27 @@
   </div>
 </div>
 
+<!-- Start Program Modal -->
+<div class="modal-overlay" id="startProgramModal">
+  <div class="modal-box">
+    <h2 class="modal-title"><i class="fa-solid fa-play me-2"></i>Start Program</h2>
+    <p style="color:rgba(255,255,255,0.5); font-size:0.88rem; margin-bottom:20px;">
+      Program: <strong id="startProgName" style="color:#a78bfa;"></strong>
+    </p>
+    <label class="field-label">Start Date</label>
+    <input type="date" class="field-input" id="startDate" />
+    <p style="color:rgba(255,255,255,0.35); font-size:0.82rem; margin-top:-10px; margin-bottom:20px;">
+      Your workout schedule will be built from this date.
+    </p>
+    <div class="modal-footer">
+      <button class="btn-cancel-modal" onclick="closeStartModal()">Cancel</button>
+      <button class="btn-save" id="btnStart" onclick="doStartProgram()" style="background:#a78bfa; box-shadow:0 4px 12px rgba(167,139,250,0.3);">
+        <i class="fa-solid fa-play me-1"></i> Start Program
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -291,6 +352,8 @@
   let currentUser  = null;
   let allSessions  = [];
   let activeTab    = 'upcoming';
+  let athleteData  = null;
+  let programData  = null;
   const today      = new Date(); today.setHours(0,0,0,0);
 
   // ── Auth guard ──
@@ -301,16 +364,90 @@
       if (!snap.exists) { window.location.href = 'index.html'; return; }
       if (snap.data().role === 'trainer') { window.location.href = 'trainer-dashboard.html'; return; }
       currentUser = user;
+      athleteData = snap.data();
 
-      // Set min date on date picker to today
-      document.getElementById('sessDate').min = today.toISOString().split('T')[0];
+      const todayStr = today.toISOString().split('T')[0];
+      document.getElementById('sessDate').min  = todayStr;
+      document.getElementById('startDate').min = todayStr;
+      document.getElementById('startDate').value = todayStr;
 
+      loadProgram();
       loadSessions();
     } catch(e) {
       console.error(e);
       document.getElementById('loadingOverlay').style.display = 'none';
     }
   });
+
+  // ── Load assigned program ──
+  async function loadProgram() {
+    const progName = athleteData.assignedProgram;
+    if (!progName) return;
+
+    const snap = await db.collection('programs').where('name', '==', progName).get();
+    if (snap.empty) return;
+    programData = { id: snap.docs[0].id, ...snap.docs[0].data() };
+    renderProgramBanner();
+  }
+
+  function renderProgramBanner() {
+    if (!programData) return;
+    const section  = document.getElementById('programSection');
+    const banner   = document.getElementById('programBanner');
+    const started  = athleteData.programStartDate;
+    const startStr = started ? new Date(started).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+
+    section.style.display = 'block';
+    banner.innerHTML = `
+      <div class="program-banner-left">
+        <div class="program-banner-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+        <div>
+          <div class="program-banner-label">Assigned Program</div>
+          <div class="program-banner-name">${esc(programData.name)}</div>
+          <div class="program-banner-meta">
+            <span><i class="fa-solid fa-signal me-1"></i>${esc(programData.difficulty)}</span>
+            <span><i class="fa-regular fa-clock me-1"></i>${esc(programData.duration)}</span>
+            <span><i class="fa-solid fa-calendar-days me-1"></i>${esc(programData.daysPerWeek)}</span>
+            ${started ? `<span><i class="fa-solid fa-play me-1"></i>Started ${startStr}</span>` : ''}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        ${started ? `<span class="program-started-badge"><i class="fa-solid fa-circle-check me-1"></i>Active</span>
+          <button class="btn-change-date" onclick="openStartModal()"><i class="fa-solid fa-pen me-1"></i>Change Start Date</button>` :
+          `<button class="btn-start-program" onclick="openStartModal()"><i class="fa-solid fa-play"></i> Start Program</button>`}
+      </div>`;
+  }
+
+  function openStartModal() {
+    document.getElementById('startProgName').textContent = programData?.name || '';
+    if (athleteData.programStartDate) {
+      document.getElementById('startDate').value = new Date(athleteData.programStartDate).toISOString().split('T')[0];
+    }
+    document.getElementById('startProgramModal').classList.add('open');
+  }
+  function closeStartModal() { document.getElementById('startProgramModal').classList.remove('open'); }
+
+  async function doStartProgram() {
+    const dateVal = document.getElementById('startDate').value;
+    if (!dateVal) { showToast('Please pick a start date.', 'error'); return; }
+    const btn = document.getElementById('btnStart');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>';
+    try {
+      const ms = new Date(dateVal).getTime();
+      await db.collection('users').doc(currentUser.uid).update({ programStartDate: ms });
+      athleteData.programStartDate = ms;
+      renderProgramBanner();
+      showToast('Program started!', 'success');
+      closeStartModal();
+    } catch(e) {
+      showToast('Error: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-play me-1"></i> Start Program';
+    }
+  }
 
   // ── Load ──
   function loadSessions() {
@@ -460,6 +597,9 @@
 
   document.getElementById('sessionModal').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
+  });
+  document.getElementById('startProgramModal').addEventListener('click', function(e) {
+    if (e.target === this) closeStartModal();
   });
 </script>
 </body>
