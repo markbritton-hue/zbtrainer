@@ -398,9 +398,10 @@
   function loadPrograms() {
     db.collection('programs')
       .where('trainerId', '==', currentUser.uid)
-      .orderBy('createdAt', 'desc')
       .onSnapshot(snap => {
-        allPrograms = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        allPrograms = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
         renderPrograms();
         document.getElementById('loadingOverlay').style.display = 'none';
       }, err => {
